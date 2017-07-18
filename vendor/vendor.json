@@ -41,6 +41,12 @@
 			"revisionTime": "2017-07-06T15:43:13Z"
 		},
 		{
+			"checksumSHA1": "FmvLZBLZJPw74S8G/nldAMgFess=",
+			"path": "github.com/facebookgo/flagenv",
+			"revision": "fcd59fca7456889be7f2ad4515b7612fd6acef31",
+			"revisionTime": "2016-04-25T20:52:00Z"
+		},
+		{
 			"checksumSHA1": "yqF125xVSkmfLpIVGrLlfE05IUk=",
 			"path": "github.com/golang/protobuf/proto",
 			"revision": "0a4f71a498b7c4812f64969510bcb4eca251e33a",
