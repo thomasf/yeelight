@@ -8,6 +8,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/facebookgo/flagenv"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/thomasf/lg"
 	_ "github.com/thomasf/lg/pkg/prometheus"
@@ -24,6 +25,8 @@ func main() {
 	flag.StringVar(&mqttConnStr, "mqtt", "mqtt://guest:guest@127.0.0.1", "mqtt connection string")
 	flag.StringVar(&metricsAddr, "metricsAddr", ":8080", "metrics listening addr")
 	flag.StringVar(&clientID, "client_id", "yeelight-mqtt", "mqtt client id")
+	flagenv.Prefix = "YEEL_"
+	flagenv.Parse()
 
 	flag.Parse()
 	if netifName == "" {
@@ -42,6 +45,7 @@ func main() {
 	service := mqtt.MQTTService{
 		MQTTConnectionStr: mqttConnStr,
 		MulticastIF:       netifName,
+		ClientID:          clientID,
 	}
 	lg.Error(service.Start())
 
