@@ -14,6 +14,7 @@ import (
 // MQTTService .
 type MQTTService struct {
 	MQTTConnectionStr string
+	ClientID          string
 	MulticastIF       string // which network interface to use for multicast udp
 }
 
@@ -32,9 +33,13 @@ func (m *MQTTService) Start() error {
 	}
 	lg.Infoln(mqconf)
 
+	clientID := m.ClientID
+	if clientID == "" {
+		clientID = "yeelight-proxy"
+	}
 	mqttOpts := MQTT.NewClientOptions().
 		AddBroker(mqconf.Broker).
-		SetClientID("yeelight-proxy")
+		SetClientID(clientID)
 
 	if mqconf.User != "" {
 		mqttOpts.SetUsername(mqconf.User)

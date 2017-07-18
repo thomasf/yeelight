@@ -19,10 +19,11 @@ func main() {
 	lg.SetSrcHighlight("yeelight/cmd", "yeelight/pkg")
 	lg.CopyStandardLogTo("warning")
 
-	var netifName, mqttConnStr, metricsAddr string
+	var netifName, mqttConnStr, metricsAddr, clientID string
 	flag.StringVar(&netifName, "if", "", "network interface for yl multicast network")
 	flag.StringVar(&mqttConnStr, "mqtt", "mqtt://guest:guest@127.0.0.1", "mqtt connection string")
 	flag.StringVar(&metricsAddr, "metricsAddr", ":8080", "metrics listening addr")
+	flag.StringVar(&clientID, "client_id", "yeelight-mqtt", "mqtt client id")
 
 	flag.Parse()
 	if netifName == "" {
