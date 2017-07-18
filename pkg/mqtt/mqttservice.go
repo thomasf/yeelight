@@ -1,8 +1,6 @@
 package mqtt
 
 import (
-	"log"
-	"os"
 	"time"
 
 	MQTT "github.com/eclipse/paho.mqtt.golang"
@@ -16,11 +14,14 @@ type MQTTService struct {
 	MQTTConnectionStr string
 	ClientID          string
 	MulticastIF       string // which network interface to use for multicast udp
+
 }
 
 func (m *MQTTService) Start() error {
-	// MQTT.DEBUG = log.New(os.Stdout, "", 0)
-	MQTT.ERROR = log.New(os.Stdout, "", 0)
+
+	lg.CopyLoggerTo("error", MQTT.ERROR)
+	lg.CopyLoggerTo("warning", MQTT.WARN)
+	lg.CopyLoggerTo("fatal", MQTT.CRITICAL)
 
 	commandCh := make(chan Command, 100)
 	var mqconf mqttconfig
