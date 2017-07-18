@@ -105,7 +105,7 @@ func NewClient(o *ClientOptions) Client {
 	}
 	c.persist = c.options.Store
 	c.status = disconnected
-	c.messageIds = messageIds{index: make(map[uint16]Token)}
+	c.messageIds = messageIds{index: [65535]Token{}}
 	c.msgRouter, c.stopRouter = newRouter()
 	c.msgRouter.setDefaultHandler(c.options.DefaultPublishHander)
 	if !c.options.AutoReconnect {
@@ -168,8 +168,10 @@ func (c *client) Connect() Token {
 		c.setConnected(connecting)
 		var rc byte
 		cm := newConnectMsgFromOptions(&c.options)
+		protocolVersion := c.options.ProtocolVersion
 
 		for _, broker := range c.options.Servers {
+			c.options.ProtocolVersion = protocolVersion
 		CONN:
 			DEBUG.Println(CLI, "about to write new connect msg")
 			c.conn, err = openConnection(broker, &c.options.TLSConfig, c.options.ConnectTimeout)
@@ -227,6 +229,8 @@ func (c *client) Connect() Token {
 			return
 		}
 
+		c.options.protocolVersionExplicit = true
+
 		c.obound = make(chan *PacketAndToken, c.options.MessageChannelDepth)
 		c.oboundP = make(chan *PacketAndToken, c.options.MessageChannelDepth)
 		c.ibound = make(chan packets.ControlPacket)
@@ -236,22 +240,18 @@ func (c *client) Connect() Token {
 		c.packetResp = make(chan struct{}, 1)
 		c.keepaliveReset = make(chan struct{}, 1)
 
+		if c.options.KeepAlive != 0 {
+			c.workers.Add(1)
+			go keepalive(c)
+		}
+
 		c.incomingPubChan = make(chan *packets.PublishPacket, c.options.MessageChannelDepth)
 		c.msgRouter.matchAndDispatch(c.incomingPubChan, c.options.Order, c)
-
-		c.workers.Add(1)
-		go outgoing(c)
-		go alllogic(c)
 
 		c.setConnected(connected)
 		DEBUG.Println(CLI, "client is connected")
 		if c.options.OnConnect != nil {
 			go c.options.OnConnect(c)
-		}
-
-		if c.options.KeepAlive != 0 {
-			c.workers.Add(1)
-			go keepalive(c)
 		}
 
 		// Take care of any messages in the store
@@ -262,8 +262,12 @@ func (c *client) Connect() Token {
 			c.persist.Reset()
 		}
 
+		go errorWatch(c)
+
 		// Do not start incoming until resume has completed
-		c.workers.Add(1)
+		c.workers.Add(3)
+		go alllogic(c)
+		go outgoing(c)
 		go incoming(c)
 
 		DEBUG.Println(CLI, "exit startClient")
@@ -286,7 +290,6 @@ func (c *client) reconnect() {
 		cm := newConnectMsgFromOptions(&c.options)
 
 		for _, broker := range c.options.Servers {
-		CONN:
 			DEBUG.Println(CLI, "about to write new connect msg")
 			c.conn, err = openConnection(broker, &c.options.TLSConfig, c.options.ConnectTimeout)
 			if err == nil {
@@ -298,7 +301,6 @@ func (c *client) reconnect() {
 					cm.ProtocolVersion = 3
 				default:
 					DEBUG.Println(CLI, "Using MQTT 3.1.1 protocol")
-					c.options.ProtocolVersion = 4
 					cm.ProtocolName = "MQTT"
 					cm.ProtocolVersion = 4
 				}
@@ -312,11 +314,6 @@ func (c *client) reconnect() {
 					if c.options.protocolVersionExplicit {
 						ERROR.Println(CLI, "Connecting to", broker, "CONNACK was not Accepted, but rather", packets.ConnackReturnCodes[rc])
 						continue
-					}
-					if c.options.ProtocolVersion == 4 {
-						DEBUG.Println(CLI, "Trying reconnect using MQTT 3.1 protocol")
-						c.options.ProtocolVersion = 3
-						goto CONN
 					}
 				}
 				break
@@ -344,11 +341,12 @@ func (c *client) reconnect() {
 		return
 	}
 
-	c.stop = make(chan struct{})
+	if c.options.KeepAlive != 0 {
+		c.workers.Add(1)
+		go keepalive(c)
+	}
 
-	c.workers.Add(1)
-	go outgoing(c)
-	go alllogic(c)
+	c.stop = make(chan struct{})
 
 	c.setConnected(connected)
 	DEBUG.Println(CLI, "client is reconnected")
@@ -356,11 +354,11 @@ func (c *client) reconnect() {
 		go c.options.OnConnect(c)
 	}
 
-	if c.options.KeepAlive != 0 {
-		c.workers.Add(1)
-		go keepalive(c)
-	}
-	c.workers.Add(1)
+	go errorWatch(c)
+
+	c.workers.Add(3)
+	go alllogic(c)
+	go outgoing(c)
 	go incoming(c)
 }
 
@@ -433,6 +431,9 @@ func (c *client) internalConnLost(err error) {
 		c.closeStop()
 		c.conn.Close()
 		c.workers.Wait()
+		if c.options.CleanSession {
+			c.messageIds.cleanUp()
+		}
 		if c.options.AutoReconnect {
 			c.setConnected(reconnecting)
 			go c.reconnect()
