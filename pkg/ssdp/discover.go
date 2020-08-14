@@ -3,6 +3,7 @@ package ssdp
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"net"
@@ -21,7 +22,12 @@ import (
 )
 
 func GetDevices(ifname string) ([]yeel.Device, error) {
+	return GetDevicesWithContext(context.Background(), ifname)
+}
 
+func GetDevicesWithContext(ctx context.Context, ifname string) ([]yeel.Device, error) {
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
 	timeout := time.Second
 	var devices []yeel.Device
 
@@ -61,6 +67,8 @@ loop:
 		case v := <-deviceCh:
 			deviceMap[v.ID] = v
 		case <-timeoutT.C:
+			break loop
+		case <-ctx.Done():
 			break loop
 		}
 	}
@@ -227,6 +235,7 @@ func (c *Conn) do(req *http.Request, timeout time.Duration) error {
 	if err != nil {
 		return err
 	}
+
 	if n, err := c.uConn.WriteTo(requestBuf.Bytes(), destAddr); err != nil {
 		return err
 	} else if n < len(requestBuf.Bytes()) {

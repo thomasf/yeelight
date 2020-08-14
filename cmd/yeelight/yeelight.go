@@ -2,43 +2,33 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"log"
 	"math/rand"
+	"os"
 	"sync"
 	"time"
 
-	"github.com/thomasf/lg"
-
+	"github.com/google/subcommands"
+	"github.com/thomasf/yeelight/pkg/cli"
 	"github.com/thomasf/yeelight/pkg/ssdp"
 	"github.com/thomasf/yeelight/pkg/yeel"
 )
 
 func main() {
 	rand.Seed(time.Now().UTC().UnixNano())
-	flag.Parse()
-	devices, err := ssdp.GetDevices("ens135")
-	if err != nil {
-		lg.Fatal(err)
-	}
-	for _, v := range devices {
-		lg.Infoln(v)
-		if v.Name == "" {
-			conn := &yeel.Conn{
-				Device: v,
-			}
-			go conn.Open()
-			time.Sleep(time.Second)
+	subcommands.Register(subcommands.HelpCommand(), "")
+	subcommands.Register(subcommands.FlagsCommand(), "")
+	subcommands.Register(subcommands.CommandsCommand(), "")
+	subcommands.Register(&cli.ListCmd{}, "")
 
-			_, err := conn.ExecCommand(yeel.SetNameCommand{Name: "tf-desk"})
-			if err != nil {
-				log.Fatal(err)
-			}
-		}
-	}
+	flag.Parse()
+	ctx := context.Background()
+	os.Exit(int(subcommands.Execute(ctx)))
 
 	// os.Exit(0)
-	main2()
+	// main2()
 
 	// d := yeel.Device{
 	// 	Location: "yeelight://192.168.0.54:55443",

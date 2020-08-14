@@ -40,7 +40,7 @@ Receiving state updates:
 - `ylstrip/state/[devicename]/[property]`
 
 
-## common properties for all models
+## states
 
 - `[type]/state/[devicename]/name` device name
 - `[type]/state/[devicename]/model` one of `mono`/`color`/`strip`
