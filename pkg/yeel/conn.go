@@ -5,10 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"net"
 	"time"
 
-	"github.com/prometheus/common/log"
 	"github.com/thomasf/lg"
 )
 
@@ -124,7 +124,7 @@ func (c *Conn) Open() error {
 				lg.Errorln(err, str)
 			}
 			if r.Notification == nil && r.Result == nil {
-				log.Errorln("could not parse message from: %s", str)
+				log.Printf("could not parse message from: %s", str)
 				continue loop
 			}
 			if r.Notification != nil {

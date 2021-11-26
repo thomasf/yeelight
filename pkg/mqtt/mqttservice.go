@@ -1,6 +1,8 @@
 package mqtt
 
 import (
+	"log"
+	"os"
 	"time"
 
 	MQTT "github.com/eclipse/paho.mqtt.golang"
@@ -19,9 +21,20 @@ type MQTTService struct {
 
 func (m *MQTTService) Start() error {
 
-	lg.CopyLoggerTo("error", MQTT.ERROR)
-	lg.CopyLoggerTo("warning", MQTT.WARN)
-	lg.CopyLoggerTo("fatal", MQTT.CRITICAL)
+	{
+		errorLog := log.New(os.Stdout, "", 0)
+		MQTT.ERROR = errorLog
+		lg.CopyLoggerTo("error", errorLog)
+
+		warnLog := log.New(os.Stdout, "", 0)
+		MQTT.WARN = warnLog
+		lg.CopyLoggerTo("warn", warnLog)
+
+		fatalLog := log.New(os.Stdout, "", 0)
+		MQTT.CRITICAL = fatalLog
+		lg.CopyLoggerTo("fatal", fatalLog)
+
+	}
 
 	commandCh := make(chan Command, 100)
 	var mqconf mqttconfig

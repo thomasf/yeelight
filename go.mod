@@ -1,24 +1,30 @@
 module github.com/thomasf/yeelight
 
-go 1.13
+go 1.17
 
 require (
-	github.com/alecthomas/units v0.0.0-20190924025748-f65c72e2690d // indirect
 	github.com/davecgh/go-spew v1.1.1
-	github.com/daviddengcn/go-colortext v0.0.0-20180409174941-186a3d44e920 // indirect
-	github.com/eclipse/paho.mqtt.golang v1.0.1-0.20170706154313-e9f694b2eba2
-	github.com/facebookgo/ensure v0.0.0-20160127193407-b4ab57deab51 // indirect
+	github.com/eclipse/paho.mqtt.golang v1.3.5
 	github.com/facebookgo/flagenv v0.0.0-20160425205200-fcd59fca7456
+	github.com/google/subcommands v1.2.0
+	github.com/prometheus/client_golang v1.11.0
+	github.com/thomasf/lg v1.0.1
+	golang.org/x/net v0.0.0-20211123203042-d83791d6bcd9
+)
+
+require (
+	github.com/beorn7/perks v1.0.1 // indirect
+	github.com/cespare/xxhash/v2 v2.1.2 // indirect
+	github.com/daviddengcn/go-colortext v1.0.0 // indirect
+	github.com/facebookgo/ensure v0.0.0-20160127193407-b4ab57deab51 // indirect
 	github.com/facebookgo/stack v0.0.0-20160209184415-751773369052 // indirect
 	github.com/facebookgo/subset v0.0.0-20150612182917-8dac2c3c4870 // indirect
-	github.com/golangplus/bytes v0.0.0-20160111154220-45c989fe5450 // indirect
-	github.com/golangplus/fmt v0.0.0-20150411045040-2a5d6d7d2995 // indirect
-	github.com/golangplus/testing v0.0.0-20180327235837-af21d9c3145e // indirect
-	github.com/google/subcommands v1.2.0
-	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
-	github.com/prometheus/client_golang v1.3.0
-	github.com/prometheus/common v0.7.0
-	github.com/thomasf/lg v0.0.0-20160831155951-8cde1d1ef8d4
-	golang.org/x/net v0.0.0-20191209160850-c0dbc17a3553
-	golang.org/x/sys v0.0.0-20200107162124-548cf772de50 // indirect
+	github.com/golang/protobuf v1.5.2 // indirect
+	github.com/gorilla/websocket v1.4.2 // indirect
+	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
+	github.com/prometheus/client_model v0.2.0 // indirect
+	github.com/prometheus/common v0.32.1 // indirect
+	github.com/prometheus/procfs v0.7.3 // indirect
+	golang.org/x/sys v0.0.0-20211124211545-fe61309f8881 // indirect
+	google.golang.org/protobuf v1.27.1 // indirect
 )
