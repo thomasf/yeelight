@@ -28,7 +28,7 @@ func (m *MQTTService) Start() error {
 
 		warnLog := log.New(os.Stdout, "", 0)
 		MQTT.WARN = warnLog
-		lg.CopyLoggerTo("warn", warnLog)
+		lg.CopyLoggerTo("warning", warnLog)
 
 		fatalLog := log.New(os.Stdout, "", 0)
 		MQTT.CRITICAL = fatalLog
